@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace YeTi
 {
@@ -11,12 +12,23 @@ namespace YeTi
             _registrations.Add(typeof(TRegistration), typeof(TImplementation));
         }
 
+
+        object Resolve(Type type)
+        {
+            var requestedType = type;
+            Type actualType = _registrations[requestedType];
+            var ctors = actualType.GetConstructors();
+            var ctor = ctors.First();
+            IEnumerable<Type> dependencyTypes = ctor.GetParameters().Select(p => p.ParameterType);
+            var dependencies = dependencyTypes.Select(d => this.Resolve(d)).ToArray();
+
+            var instance = Activator.CreateInstance(actualType, dependencies);
+            return instance;
+        }
+
         public T Resolve<T>()
         {
-            var requestedType = typeof(T);
-            Type actualType = _registrations[requestedType];
-            var instance = Activator.CreateInstance(actualType);
-            return (T)instance;
+            return (T) this.Resolve(typeof(T));
         }
     }
 }
