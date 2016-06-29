@@ -18,6 +18,10 @@ namespace YeTi
             var requestedType = type;
             Type actualType = _registrations[requestedType];
             var ctors = actualType.GetConstructors();
+            if(ctors.Length>1)
+            {
+                throw new ComponentHasMultipleCtorsException(actualType);
+            }
             var ctor = ctors.First();
             IEnumerable<Type> dependencyTypes = ctor.GetParameters().Select(p => p.ParameterType);
             var dependencies = dependencyTypes.Select(d => this.Resolve(d)).ToArray();
@@ -28,7 +32,24 @@ namespace YeTi
 
         public T Resolve<T>()
         {
-            return (T) this.Resolve(typeof(T));
+            return (T)this.Resolve(typeof(T));
+        }
+    }
+
+    public abstract class ComponentException : Exception
+    {
+        public Type Type;
+        public ComponentException(Type type)
+        {
+            Type = type;
+        }
+    }
+
+    public class ComponentHasMultipleCtorsException: ComponentException
+    {
+        public ComponentHasMultipleCtorsException(Type t): base(t)
+        {
+
         }
     }
 }
