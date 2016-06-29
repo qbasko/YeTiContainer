@@ -9,14 +9,10 @@ namespace YeTi.Tests
         [Test]
         public void resolves_registered_components()
         {
-            //arrange
             var container = new YeTiContainer();
             container.Register<ITestInterface, TestImplementation>();
-            //act
             var resolved_object = container.Resolve<ITestInterface>();
-            //arrange
             resolved_object.ShouldBeOfType<TestImplementation>();
-
         }
 
         public interface ITestInterface
